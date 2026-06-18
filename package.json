@@ -5,18 +5,16 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node --watch src/index.js",
-    "test": "node test/index.test.js"
+    "dev": "node --watch src/index.js"
   },
   "keywords": ["telegram", "bot", "developer-tools"],
   "author": "",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "telegraf": "^4.16.3",
-    "dotenv": "^16.4.5",
-    "axios": "^1.7.2"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.0"
+    "dotenv": "^16.4.5"
   }
 }
