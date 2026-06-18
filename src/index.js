@@ -154,6 +154,18 @@ module.exports = async (req, res) => {
   try {
     // GET 请求 - 健康检查
     if (req.method === 'GET') {
+      // 检查 setup 参数 - 用于设置 webhook
+      if (req.query && req.query.setup === 'webhook') {
+        const url = req.query.url || 'https://codetools-bot.vercel.app';
+        try {
+          const result = await bot.telegram.setWebhook(url);
+          const info = await bot.telegram.getWebhookInfo();
+          res.status(200).json({ status: 'ok', webhook_set: result, webhook_info: info });
+        } catch (err) {
+          res.status(500).json({ status: 'error', error: err.message });
+        }
+        return;
+      }
       res.status(200).json({ status: 'ok', message: 'CodeTools Bot is running' });
       return;
     }
