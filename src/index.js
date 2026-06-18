@@ -1,4 +1,4 @@
-// Vercel Serverless 函数入口
+// Vercel Serverless 入口
 const { Telegraf } = require('telegraf');
 const tools = require('./utils/tools');
 require('dotenv').config();
@@ -19,7 +19,7 @@ function sendResponse(ctx, message, keyboard = null) {
 
 // 命令路由
 bot.command('start', (ctx) => {
-  sendResponse(ctx, 
+  sendResponse(ctx,
     '👋 欢迎使用 CodeTools Bot！\n\n我是一个开发者工具集合，包含：\n- JSON 格式化/压缩\n- Hash 计算（MD5/SHA1/SHA256）\n- Base64 编解码\n- QR 生成\n- 时间工具\n\n回复 /tools 查看所有工具列表',
     [
       ['📄 JSON 工具', '🔒 Hash 工具'],
@@ -76,13 +76,12 @@ bot.command('about', (ctx) => {
   );
 });
 
-// 文本处理 - 真实工具逻辑
+// 文本处理
 bot.on('text', (ctx) => {
   const text = ctx.message.text;
   const chatId = ctx.message.chat.id;
   const session = userSessions.get(chatId);
-  
-  // 处理 JSON 格式化
+
   if (session && session.mode === 'format_json') {
     try {
       const parsed = JSON.parse(text);
@@ -94,8 +93,7 @@ bot.on('text', (ctx) => {
     }
     return;
   }
-  
-  // 处理 JSON 压缩
+
   if (session && session.mode === 'minify_json') {
     try {
       const parsed = JSON.parse(text);
@@ -107,29 +105,26 @@ bot.on('text', (ctx) => {
     }
     return;
   }
-  
-  // 处理 Hash 计算
+
   if (session && session.mode === 'hash') {
     const hashes = tools.calculateHash(text);
     ctx.reply('🔒 Hash 计算结果：\n\nMD5: `' + hashes.md5 + '`\nSHA1: `' + hashes.sha1 + '`\nSHA256: `' + hashes.sha256 + '`', { parse_mode: 'MarkdownV2' });
     userSessions.delete(chatId);
     return;
   }
-  
-  // 处理 Base64 编解码
+
   if (session && session.mode === 'base64') {
     if (tools.isBase64(text)) {
       const decoded = tools.base64Decode(text);
-      ctx.reply('🔗 解码结果：\n\n```\\n' + decoded + '\n```', { parse_mode: 'MarkdownV2' });
+      ctx.reply('🔗 解码结果：\n\n```\n' + decoded + '\n```', { parse_mode: 'MarkdownV2' });
     } else {
       const encoded = tools.base64Encode(text);
-      ctx.reply('🔗 编码结果：\n\n```\\n' + encoded + '\n```', { parse_mode: 'MarkdownV2' });
+      ctx.reply('🔗 编码结果：\n\n```\n' + encoded + '\n```', { parse_mode: 'MarkdownV2' });
     }
     userSessions.delete(chatId);
     return;
   }
-  
-  // 默认 JSON 处理
+
   if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
     try {
       const parsed = JSON.parse(text);
@@ -139,35 +134,41 @@ bot.on('text', (ctx) => {
     }
     return;
   }
-  
-  // 默认 Hash 处理
+
   if (text.length < 1000) {
     const hashes = tools.calculateHash(text);
     ctx.reply('🔒 Hash 计算结果：\n\nMD5: `' + hashes.md5 + '`\nSHA1: `' + hashes.sha1 + '`\nSHA256: `' + hashes.sha256 + '`', { parse_mode: 'MarkdownV2' });
     return;
   }
-  
-  // 默认提示
+
   ctx.reply('工具功能开发中...请使用 /tools 查看可用命令');
 });
-
-// 清理超时会话（10分钟）
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, session] of userSessions.entries()) {
-    if (now - session.timestamp > 600000) {
-      userSessions.delete(key);
-    }
-  }
-}, 60000);
 
 // 错误处理
 bot.catch((err) => {
   console.error('❌ 错误:', err);
 });
 
-// 启动 Bot
-bot.launch();
-console.log('✅ Bot 已启动');
+// Vercel Webhook handler
+module.exports = async (req, res) => {
+  try {
+    // GET 请求 - 健康检查
+    if (req.method === 'GET') {
+      res.status(200).json({ status: 'ok', message: 'CodeTools Bot is running' });
+      return;
+    }
 
-module.exports = bot;
+    // POST 请求 - Telegram Webhook
+    if (req.method === 'POST') {
+      const update = req.body;
+      await bot.handleUpdate(update);
+      res.status(200).json({ status: 'ok' });
+      return;
+    }
+
+    res.status(405).json({ error: 'Method not allowed' });
+  } catch (err) {
+    console.error('Handler error:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
