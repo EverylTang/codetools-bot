@@ -1,17 +1,17 @@
-const { Telegraf, Markup, Context } = require('telegraf');
+// Vercel Serverless 函数入口
+const { Telegraf } = require('telegraf');
 const tools = require('./utils/tools');
-const crypto = require('crypto');
 require('dotenv').config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// 临时存储用户会话数据（生产环境应使用 Redis）
+// 临时存储用户会话数据
 const userSessions = new Map();
 
 // 辅助函数：发送格式化响应
 function sendResponse(ctx, message, keyboard = null) {
   if (keyboard) {
-    ctx.reply(message, Markup.keyboard(keyboard).resize());
+    ctx.reply(message, { resize_keyboard: true, keyboard });
   } else {
     ctx.reply(message);
   }
@@ -120,10 +120,10 @@ bot.on('text', (ctx) => {
   if (session && session.mode === 'base64') {
     if (tools.isBase64(text)) {
       const decoded = tools.base64Decode(text);
-      ctx.reply('🔗 解码结果：\n\n```\n' + decoded + '\n```', { parse_mode: 'MarkdownV2' });
+      ctx.reply('🔗 解码结果：\n\n```\\n' + decoded + '\n```', { parse_mode: 'MarkdownV2' });
     } else {
       const encoded = tools.base64Encode(text);
-      ctx.reply('🔗 编码结果：\n\n```\n' + encoded + '\n```', { parse_mode: 'MarkdownV2' });
+      ctx.reply('🔗 编码结果：\n\n```\\n' + encoded + '\n```', { parse_mode: 'MarkdownV2' });
     }
     userSessions.delete(chatId);
     return;
