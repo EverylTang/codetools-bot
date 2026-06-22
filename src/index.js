@@ -49,7 +49,14 @@ function cleanupExpiredSessions() {
 }
 
 function sendResponse(ctx, message, keyboard = null) {
-  if (keyboard) return ctx.reply(message, { resize_keyboard: true, keyboard });
+  if (keyboard) {
+    return ctx.reply(message, {
+      reply_markup: {
+        resize_keyboard: true,
+        keyboard
+      }
+    });
+  }
   return ctx.reply(message);
 }
 
