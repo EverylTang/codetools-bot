@@ -84,10 +84,16 @@ bot.command('start', (ctx) => {
   sendResponse(ctx,
     '👋 欢迎使用 CodeTools Bot！\n\n我是一个开发者工具集合，回复 /tools 查看所有工具。',
     [
-      ['📄 JSON 工具', '🔒 Hash 工具'],
-      ['🔗 Base64', '🖼️ QR 生成'],
-      ['⏱️ 时间工具', '🧰 更多工具'],
-      ['ℹ️ 关于']
+      ['📄 JSON 格式化', '🗜️ JSON 压缩'],
+      ['🔒 Hash 工具', '🔗 Base64'],
+      ['🖼️ QR 生成', '⏱️ 时间工具'],
+      ['🌐 URL 编解码', '🆔 UUID 生成'],
+      ['🎫 JWT 解码', '🎨 颜色转换'],
+      ['🏷️ HTML 转义', '🔤 命名转换'],
+      ['🔐 随机密码', '🕒 Cron 解释'],
+      ['🧭 UA 解析', '🔎 JSONPath'],
+      ['📝 Markdown 转义', '🔍 Regex 测试'],
+      ['🧰 更多工具', 'ℹ️ 关于']
     ]
   );
 });
@@ -223,10 +229,24 @@ bot.on('text', async (ctx) => {
   const chatId = ctx.message.chat.id;
 
   if (trimmedText === '📄 JSON 工具') return sendResponse(ctx, '📄 JSON 工具\n\n/indent - JSON 格式化\n/minify - JSON 压缩');
+  if (trimmedText === '📄 JSON 格式化') return enterMode(ctx, 'format_json');
+  if (trimmedText === '🗜️ JSON 压缩') return enterMode(ctx, 'minify_json');
   if (trimmedText === '🔒 Hash 工具') return enterMode(ctx, 'hash');
   if (trimmedText === '🔗 Base64') return enterMode(ctx, 'base64');
   if (trimmedText === '🖼️ QR 生成') return enterMode(ctx, 'qr');
   if (trimmedText === '⏱️ 时间工具') return showTime(ctx);
+  if (trimmedText === '🌐 URL 编解码') return enterMode(ctx, 'url');
+  if (trimmedText === '🆔 UUID 生成') return ctx.reply('🆔 UUID 生成结果：\n\n' + tools.generateUUID('1').join('\n'));
+  if (trimmedText === '🎫 JWT 解码') return enterMode(ctx, 'jwt');
+  if (trimmedText === '🎨 颜色转换') return enterMode(ctx, 'color');
+  if (trimmedText === '🏷️ HTML 转义') return enterMode(ctx, 'html');
+  if (trimmedText === '🔤 命名转换') return enterMode(ctx, 'case');
+  if (trimmedText === '🔐 随机密码') return ctx.reply('🔐 随机密码：\n\n' + tools.generatePassword('16'));
+  if (trimmedText === '🕒 Cron 解释') return enterMode(ctx, 'cron');
+  if (trimmedText === '🧭 UA 解析') return enterMode(ctx, 'ua');
+  if (trimmedText === '🔎 JSONPath') return enterMode(ctx, 'jsonpath');
+  if (trimmedText === '📝 Markdown 转义') return enterMode(ctx, 'md');
+  if (trimmedText === '🔍 Regex 测试') return enterMode(ctx, 'regex');
   if (trimmedText === '🧰 更多工具') return showTools(ctx);
   if (trimmedText === 'ℹ️ 关于') return showAbout(ctx);
 
