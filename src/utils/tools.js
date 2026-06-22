@@ -1,5 +1,7 @@
 // 工具处理模块 - 处理用户发送的文本数据
 
+const QRCode = require('qrcode');
+
 // JSON格式化
 function formatJson(jsonStr) {
   try {
@@ -21,9 +23,8 @@ function minifyJson(jsonStr) {
 }
 
 // 计算Hash
-function calculateHash(text, algorithm = 'sha256') {
+function calculateHash(text) {
   const crypto = require('crypto');
-  const hash = crypto.createHash(algorithm).update(text).digest('hex');
   return {
     md5: crypto.createHash('md5').update(text).digest('hex'),
     sha1: crypto.createHash('sha1').update(text).digest('hex'),
@@ -47,11 +48,25 @@ function base64Decode(text) {
 
 // 检测是否是Base64
 function isBase64(str) {
+  if (!str || typeof str !== 'string') return false;
+  const normalized = str.trim();
+  if (normalized.length === 0 || normalized.length % 4 !== 0) return false;
+
   try {
-    return Buffer.from(str, 'base64').toString('base64') === str;
+    return Buffer.from(normalized, 'base64').toString('base64') === normalized;
   } catch (e) {
     return false;
   }
+}
+
+// 生成二维码 PNG Buffer
+async function generateQRCodeBuffer(text) {
+  return QRCode.toBuffer(text, {
+    type: 'png',
+    margin: 2,
+    width: 512,
+    errorCorrectionLevel: 'M'
+  });
 }
 
 module.exports = {
@@ -60,5 +75,6 @@ module.exports = {
   calculateHash,
   base64Encode,
   base64Decode,
-  isBase64
+  isBase64,
+  generateQRCodeBuffer
 };
